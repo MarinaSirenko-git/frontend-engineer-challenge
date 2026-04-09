@@ -34,11 +34,11 @@ const errorId = `${baseId}-error`
 const showLabel = computed(() => props.modelValue.trim().length > 0)
 
 const inputClass = computed(() => [
-  'w-full min-h-[56px] border-b border-stroke pt-5',
+  'w-full min-h-[56px] border-b pt-5',
   'placeholder:text-tertiary',
-  'focus:outline-none',
+  'focus:outline-none focus:border-accent',
   'disabled:cursor-not-allowed',
-  props.error ? 'border-error' : 'border-accent',
+  props.error ? 'border-error' : 'border-stroke',
 ])
 
 function onInput(event: Event) {

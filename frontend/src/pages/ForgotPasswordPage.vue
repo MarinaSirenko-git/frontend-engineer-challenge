@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
+import { useRequestPasswordReset } from '../composables/useRequestPasswordReset'
 import Logo from '../shared/ui/base/Logo.vue'
 import SimpleLayout from '../shared/ui/layout/SimpleLayout.vue'
 import FormView from './forgot-password/FormView.vue'
@@ -7,13 +8,8 @@ import StatusView from './forgot-password/StatusView.vue'
 
 defineOptions({ name: 'ForgotPasswordPage' })
 
-const model = ref({ email: '' })
-const isSuccess = ref(false)
-const isSubmitting = ref(false)
-
-const canSubmit = computed(
-  () => model.value.email.trim().length > 0 && !isSubmitting.value,
-)
+const requestPasswordReset = useRequestPasswordReset()
+const isSuccess = computed(() => requestPasswordReset.status.value === 'success')
 const statusContent = computed(() => ({
   title: 'Проверьте свою почту',
   description: 'Мы отправили на почту письмо с ссылкой для восстановления пароля',
@@ -24,18 +20,11 @@ const statusContent = computed(() => ({
 }))
 
 function updateModel(nextModel: { email: string }) {
-  model.value = nextModel
+  requestPasswordReset.email.value = nextModel.email
 }
 
 async function handleSubmit() {
-  if (!canSubmit.value || isSuccess.value) return
-  isSubmitting.value = true
-  try {
-    await new Promise((resolve) => setTimeout(resolve, 400))
-    isSuccess.value = true
-  } finally {
-    isSubmitting.value = false
-  }
+  await requestPasswordReset.submit()
 }
 </script>
 
@@ -49,8 +38,10 @@ async function handleSubmit() {
       <div class="flex min-h-dvh items-center justify-center px-5 py-8">
         <FormView
           v-if="!isSuccess"
-          :model="model"
-          :is-submitting="isSubmitting"
+          :model="{ email: requestPasswordReset.email.value }"
+          :is-submitting="requestPasswordReset.isSubmitting.value"
+          :email-error="requestPasswordReset.fieldErrors.value.email"
+          :general-error="requestPasswordReset.generalError.value"
           @update:model="updateModel"
           @submit="handleSubmit"
         />

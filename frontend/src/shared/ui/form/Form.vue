@@ -9,7 +9,7 @@ function onSubmit() {
 </script>
 
 <template>
-  <form class="flex flex-col w-full gap-[24px]" @submit.prevent="onSubmit">
+  <form novalidate class="flex flex-col w-full gap-[24px]" @submit.prevent="onSubmit">
     <slot />
   </form>
 </template>

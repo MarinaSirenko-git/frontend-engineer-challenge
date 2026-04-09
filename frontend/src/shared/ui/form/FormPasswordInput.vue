@@ -9,12 +9,14 @@ const props = withDefaults(
     label: string
     placeholder?: string
     error?: string
+    hasError?: boolean
     disabled?: boolean
     autocomplete?: string
   }>(),
   {
     placeholder: '',
     error: undefined,
+    hasError: false,
     disabled: false,
     autocomplete: undefined,
   },
@@ -39,11 +41,11 @@ const hasValue = computed(() => props.modelValue.length > 0)
 const inputType = computed(() => (showPassword.value ? 'text' : 'password'))
 
 const inputClass = computed(() => [
-  'w-full min-h-[56px] border-b border-stroke pt-5',
+  'w-full min-h-[56px] border-b pt-5',
   'placeholder:text-tertiary',
-  'focus:outline-none',
+  'focus:outline-none focus:border-accent',
   'disabled:cursor-not-allowed',
-  props.error ? 'border-error' : 'border-accent',
+  props.hasError || props.error ? 'border-error' : 'border-stroke',
 ])
 
 function onInput(event: Event) {
@@ -74,7 +76,7 @@ function toggleVisibility() {
         :disabled="disabled"
         :placeholder="placeholder"
         :autocomplete="autocomplete"
-        :aria-invalid="error ? 'true' : undefined"
+        :aria-invalid="hasError || error ? 'true' : undefined"
         :aria-describedby="error ? errorId : undefined"
         :class="inputClass"
         @input="onInput"
@@ -141,7 +143,7 @@ function toggleVisibility() {
     <p
       v-if="error"
       :id="errorId"
-      class="text-caption text-red-600"
+      class="text-caption text-error"
       role="alert"
       aria-live="polite"
     >

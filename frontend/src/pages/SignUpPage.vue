@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useSignUp } from '../composables/useSignUp'
 import Button from '../shared/ui/base/Button.vue'
 import HelperText from '../shared/ui/base/HelperText.vue'
 import Illustration from '../shared/ui/base/Illustration.vue'
@@ -12,20 +13,13 @@ import IllustrationLayout from '../shared/ui/layout/IllustrationLayout.vue'
 
 defineOptions({ name: 'SignUpPage' })
 
-const email = ref('')
-const password = ref('')
-const confirmPassword = ref('')
-/** Заглушка до подключения useSignUp и API */
-const isSubmitting = ref(false)
-
-const canSubmit = true
+const router = useRouter()
+const signUp = useSignUp()
 
 async function handleSubmit() {
-  isSubmitting.value = true
-  try {
-    await new Promise((r) => setTimeout(r, 400))
-  } finally {
-    isSubmitting.value = false
+  const result = await signUp.submit()
+  if (result) {
+    await router.push('/dashboard')
   }
 }
 </script>
@@ -45,34 +39,50 @@ async function handleSubmit() {
 
           <Form @submit="handleSubmit">
             <FormTextInput
-              v-model="email"
+              v-model="signUp.email.value"
               label="E-mail"
               type="email"
               placeholder="Введите e-mail"
               autocomplete="email"
-              :disabled="isSubmitting"
+              :error="signUp.fieldErrors.value.email"
+              :disabled="signUp.isSubmitting.value"
             />
             <FormPasswordInput
-              v-model="password"
+              v-model="signUp.password.value"
               label="Пароль"
               placeholder="Введите пароль"
               autocomplete="new-password"
-              :disabled="isSubmitting"
+              :has-error="
+                Boolean(signUp.fieldErrors.value.password || signUp.fieldErrors.value.confirmPassword)
+              "
+              :error="signUp.fieldErrors.value.password"
+              :disabled="signUp.isSubmitting.value"
             />
             <FormPasswordInput
-              v-model="confirmPassword"
+              v-model="signUp.confirmPassword.value"
               label="Повторите пароль"
               placeholder="Повторите пароль"
               autocomplete="new-password"
-              :disabled="isSubmitting"
+              :has-error="Boolean(signUp.fieldErrors.value.confirmPassword)"
+              :error="signUp.fieldErrors.value.confirmPassword"
+              :disabled="signUp.isSubmitting.value"
             />
+
+            <p
+              v-if="signUp.generalError.value"
+              class="text-caption text-error"
+              role="alert"
+              aria-live="polite"
+            >
+              {{ signUp.generalError.value }}
+            </p>
 
             <Button
               class="mt-2"
               type="submit"
               variant="primary"
-              :disabled="!canSubmit"
-              :loading="isSubmitting"
+              :disabled="signUp.isSubmitting.value"
+              :loading="signUp.isSubmitting.value"
             >
               Зарегистрироваться
             </Button>

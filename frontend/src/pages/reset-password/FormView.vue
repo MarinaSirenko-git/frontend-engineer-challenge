@@ -11,7 +11,9 @@ type ResetPasswordFormModel = {
 const props = defineProps<{
   model: ResetPasswordFormModel
   isSubmitting: boolean
-  canSubmit: boolean
+  passwordError?: string
+  confirmPasswordError?: string
+  generalError?: string
 }>()
 
 const emit = defineEmits<{
@@ -46,6 +48,7 @@ function onSubmit() {
         label="Пароль"
         placeholder="Введите пароль"
         autocomplete="new-password"
+        :error="passwordError"
         :disabled="isSubmitting"
         @update:model-value="updatePassword"
       />
@@ -55,15 +58,25 @@ function onSubmit() {
         label="Повторите пароль"
         placeholder="Повторите пароль"
         autocomplete="new-password"
+        :error="confirmPasswordError"
         :disabled="isSubmitting"
         @update:model-value="updateConfirmPassword"
       />
+
+      <p
+        v-if="generalError"
+        class="mt-3 text-caption text-error"
+        role="alert"
+        aria-live="polite"
+      >
+        {{ generalError }}
+      </p>
 
       <Button
         class="mt-6 w-full"
         type="submit"
         variant="primary"
-        :disabled="!canSubmit"
+        :disabled="isSubmitting"
         :loading="isSubmitting"
       >
         Изменить пароль

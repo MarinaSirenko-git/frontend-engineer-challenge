@@ -11,6 +11,8 @@ type ForgotPasswordFormModel = {
 const props = defineProps<{
   model: ForgotPasswordFormModel
   isSubmitting: boolean
+  emailError?: string
+  generalError?: string
 }>()
 
 const emit = defineEmits<{
@@ -45,9 +47,19 @@ function onSubmit() {
         type="email"
         placeholder="Введите e-mail"
         autocomplete="email"
+        :error="emailError"
         :disabled="isSubmitting"
         @update:model-value="updateEmail"
       />
+
+      <p
+        v-if="generalError"
+        class="text-caption text-error"
+        role="alert"
+        aria-live="polite"
+      >
+        {{ generalError }}
+      </p>
 
       <Button class="mt-6 w-full" type="submit" variant="secondary" :loading="isSubmitting">
         Восстановить пароль

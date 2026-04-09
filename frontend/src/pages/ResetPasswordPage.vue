@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useResetPassword } from '../composables/useResetPassword'
 import Logo from '../shared/ui/base/Logo.vue'
 import SimpleLayout from '../shared/ui/layout/SimpleLayout.vue'
 import FormView from './reset-password/FormView.vue'
@@ -8,29 +9,19 @@ import StatusView from './reset-password/StatusView.vue'
 
 defineOptions({ name: 'ResetPasswordPage' })
 
-type ResetPasswordStatus = 'password-restore-success' | 'password-restore-fail'
-
 const route = useRoute()
-const model = ref({
-  password: '',
-  confirmPassword: '',
+const resetPassword = useResetPassword()
+
+const tokenFromQuery = computed(() => {
+  const queryToken = route.query.token
+
+  if (typeof queryToken === 'string') return queryToken
+  if (Array.isArray(queryToken)) return queryToken[0] ?? ''
+  return ''
 })
-const isSubmitting = ref(false)
-const hasValidToken = computed(
-  () => typeof route.query.token === 'string' && route.query.token.length > 0,
-)
-
-const submitResult = ref<ResetPasswordStatus | null>(null)
-
-const canSubmit = computed(
-  () =>
-    model.value.password.trim().length > 0 &&
-    model.value.confirmPassword.trim().length > 0 &&
-    !isSubmitting.value,
-)
 
 const statusContent = computed(() => {
-  if (!hasValidToken.value) {
+  if (resetPassword.status.value === 'invalid-link') {
     return {
       title: 'Ссылка недействительна',
       description: 'Проверьте ссылку из письма ещё раз',
@@ -41,7 +32,7 @@ const statusContent = computed(() => {
     }
   }
 
-  if (submitResult.value === 'password-restore-success') {
+  if (resetPassword.status.value === 'success') {
     return {
       title: 'Пароль был восстановлен',
       description: 'Перейдите на страницу авторизации, чтобы войти в систему с новым паролем.',
@@ -62,23 +53,17 @@ const statusContent = computed(() => {
   }
 })
 
-function updateModel(nextModel: { password: string; confirmPassword: string }) {
-  model.value = nextModel
-}
-
 async function handleSubmit() {
-  if (!canSubmit.value || !hasValidToken.value || submitResult.value !== null) return
-  isSubmitting.value = true
-  try {
-    await new Promise((resolve) => setTimeout(resolve, 400))
-    submitResult.value = 'password-restore-success'
-  } catch {
-    submitResult.value = 'password-restore-fail'
-  } finally {
-    isSubmitting.value = false
-  }
+  await resetPassword.submit()
 }
 
+watch(
+  tokenFromQuery,
+  (value) => {
+    resetPassword.initFromRoute(value)
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -90,11 +75,21 @@ async function handleSubmit() {
 
       <div class="flex min-h-dvh items-center justify-center px-5 py-8">
         <FormView
-          v-if="hasValidToken && submitResult === null"
-          :model="model"
-          :is-submitting="isSubmitting"
-          :can-submit="canSubmit"
-          @update:model="updateModel"
+          v-if="resetPassword.status.value === 'form'"
+          :model="{
+            password: resetPassword.password.value,
+            confirmPassword: resetPassword.confirmPassword.value,
+          }"
+          :is-submitting="resetPassword.isSubmitting.value"
+          :password-error="resetPassword.fieldErrors.value.password"
+          :confirm-password-error="resetPassword.fieldErrors.value.confirmPassword"
+          :general-error="resetPassword.generalError.value"
+          @update:model="
+            (nextModel) => {
+              resetPassword.password.value = nextModel.password
+              resetPassword.confirmPassword.value = nextModel.confirmPassword
+            }
+          "
           @submit="handleSubmit"
         />
         <StatusView

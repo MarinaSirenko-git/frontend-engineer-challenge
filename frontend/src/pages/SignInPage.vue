@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useSignIn } from '../composables/useSignIn'
 import Button from '../shared/ui/base/Button.vue'
 import HelperText from '../shared/ui/base/HelperText.vue'
 import Illustration from '../shared/ui/base/Illustration.vue'
@@ -12,19 +13,13 @@ import IllustrationLayout from '../shared/ui/layout/IllustrationLayout.vue'
 
 defineOptions({ name: 'SignInPage' })
 
-const email = ref('')
-const password = ref('')
-/** Заглушка до подключения useSignIn и API */
-const isSubmitting = ref(false)
-
-const canSubmit = true;
+const router = useRouter()
+const signIn = useSignIn()
 
 async function handleSubmit() {
-  isSubmitting.value = true
-  try {
-    await new Promise((r) => setTimeout(r, 400))
-  } finally {
-    isSubmitting.value = false
+  const result = await signIn.submit()
+  if (result) {
+    await router.push('/dashboard')
   }
 }
 </script>
@@ -46,27 +41,38 @@ async function handleSubmit() {
 
           <Form @submit="handleSubmit">
             <FormTextInput
-              v-model="email"
+              v-model="signIn.email.value"
               label="E-mail"
               type="email"
               placeholder="Введите email"
               autocomplete="email"
-              :disabled="isSubmitting"
+              :error="signIn.fieldErrors.value.email"
+              :disabled="signIn.isSubmitting.value"
             />
             <FormPasswordInput
-              v-model="password"
+              v-model="signIn.password.value"
               label="Пароль"
               placeholder="Введите пароль"
               autocomplete="current-password"
-              :disabled="isSubmitting"
+              :error="signIn.fieldErrors.value.password"
+              :disabled="signIn.isSubmitting.value"
             />
+
+            <p
+              v-if="signIn.generalError.value"
+              class="text-caption text-error"
+              role="alert"
+              aria-live="polite"
+            >
+              {{ signIn.generalError.value }}
+            </p>
 
             <Button
               class="mt-2 w-full"
               type="submit"
               variant="primary"
-              :disabled="!canSubmit"
-              :loading="isSubmitting"
+              :disabled="signIn.isSubmitting.value"
+              :loading="signIn.isSubmitting.value"
             >
               Войти
             </Button>

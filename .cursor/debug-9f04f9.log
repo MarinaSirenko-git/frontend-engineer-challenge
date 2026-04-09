@@ -1,0 +1,3 @@
+{"sessionId":"9f04f9","runId":"signin-submit-debug","hypothesisId":"H2","location":"shared/ui/base/Button.vue:onClick","message":"Button click fired","data":{"type":"submit","disabledProp":false,"loading":false,"computedDisabled":false},"timestamp":1775733118033}
+{"sessionId":"9f04f9","runId":"signin-submit-debug","hypothesisId":"H1_H3","location":"shared/ui/form/Form.vue:onSubmit","message":"Form submit handler triggered","data":{"defaultPrevented":true,"activeTag":"BUTTON","activeType":"submit"},"timestamp":1775733118035}
+{"sessionId":"9f04f9","runId":"signin-submit-debug","hypothesisId":"H3_H4","location":"pages/SignInPage.vue:handleSubmit","message":"handleSubmit entered","data":{"emailLength":14,"passwordLength":11,"isSubmitting":false},"timestamp":1775733118036}

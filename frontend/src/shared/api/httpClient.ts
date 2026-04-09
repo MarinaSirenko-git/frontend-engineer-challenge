@@ -45,6 +45,7 @@ export type ApiRequestInit = Omit<RequestInit, 'body'> & {
 
 export async function request<T>(path: string, init: ApiRequestInit = {}): Promise<T> {
   const { body, headers: initHeaders, ...rest } = init
+  const methodUpper = (init.method ?? 'GET').toString().toUpperCase()
   const url = resolveUrl(path)
 
   const headers = new Headers(initHeaders)
@@ -62,7 +63,7 @@ export async function request<T>(path: string, init: ApiRequestInit = {}): Promi
   })
 
   const raw = await response.text()
-  let payload: unknown
+  let payload: unknown = undefined
   if (raw.trim()) {
     try {
       payload = JSON.parse(raw) as unknown
@@ -78,6 +79,14 @@ export async function request<T>(path: string, init: ApiRequestInit = {}): Promi
     const bodyParsed = isApiErrorBody(payload) ? payload : undefined
     const message = bodyParsed?.message ?? response.statusText ?? 'Request failed'
     throw new ApiHttpError(message, response.status, bodyParsed)
+  }
+
+  const emptySuccessAllowed =
+    payload === undefined &&
+    (response.status === 204 || methodUpper === 'HEAD')
+
+  if (payload === undefined && !emptySuccessAllowed) {
+    throw new ApiHttpError('Empty response body', response.status)
   }
 
   return payload as T

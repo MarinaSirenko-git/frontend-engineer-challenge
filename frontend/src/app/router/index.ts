@@ -6,6 +6,8 @@ const SignInPage = () => import('../../pages/SignInPage.vue')
 const SignUpPage = () => import('../../pages/SignUpPage.vue')
 const ForgotPasswordPage = () => import('../../pages/ForgotPasswordPage.vue')
 const ResetPasswordPage = () => import('../../pages/ResetPasswordPage.vue')
+const TermsPage = () => import('../../pages/TermsPage.vue')
+const PrivacyPage = () => import('../../pages/PrivacyPage.vue')
 const DashboardPage = () => import('../../pages/DashboardPage.vue')
 const NotFoundPage = () => import('../../pages/NotFoundPage.vue')
 
@@ -48,6 +50,18 @@ export const router = createRouter({
       path: '/reset-password',
       name: 'reset-password',
       component: ResetPasswordPage,
+      meta: { public: true },
+    },
+    {
+      path: '/terms',
+      name: 'terms',
+      component: TermsPage,
+      meta: { public: true },
+    },
+    {
+      path: '/privacy',
+      name: 'privacy',
+      component: PrivacyPage,
       meta: { public: true },
     },
     {

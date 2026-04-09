@@ -1,0 +1,60 @@
+@theme {
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+
+  /* Brand — rgb + <alpha-value> enables bg-brand/10, text-brand/20, … */
+
+  --color-primary: #1F1F27;
+  --color-foreground: #1f1f27;
+  --color-surface: #ffffff;
+  --color-secondary: #81869A;
+  --color-tertiary: #c0c2cb;
+  --color-error: #d23939;
+
+  --color-accent: #31A0F0;
+  --color-accent-hover: #1990e5;
+  --color-accent-press: #148adf;
+  --color-accent-disabled: #c0c2cb;
+
+  --color-btn-secondary: rgb(49 160 240 / 10%);
+  --color-btn-secondary-hover: rgb(49 160 240 / 15%);
+  --color-btn-secondary-press: rgb(49 160 240 / 20%);
+  --color-btn-secondary-disabled: rgb(192 194 203 / 15%);
+
+  --color-stroke: rgb(31 31 39 / 8%);
+
+  /* Typography: Inter — composite sizes (Tailwind v4) */
+  --text-heading-1: 2rem;
+  --text-heading-1--line-height: 1.2;
+  --text-heading-2: 1.5rem;
+  --text-heading-2--line-height: 1.2;
+  --text-heading-3: 1.25rem;
+  --text-heading-3--line-height: 1.2;
+
+  --text-body-lg: 0.9375rem;
+  --text-body-lg--line-height: 1.6;
+  --text-body: 0.875rem;
+  --text-body--line-height: 1.6;
+  --text-body-sm: 0.75rem;
+  --text-body-sm--line-height: 1.6;
+
+  --text-title: 0.9375rem;
+  --text-title--line-height: 1;
+  --text-title-semibold: 0.9375rem;
+  --text-title-semibold--line-height: 1;
+
+  --text-button: 0.875rem;
+  --text-button--line-height: 1;
+  --text-button-regular: 0.875rem;
+  --text-button-regular--line-height: 1;
+
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1;
+  --text-footnote: 0.8125rem;
+  --text-footnote--line-height: 1;
+
+
+
+
+  --text-subtitle: 0.875rem;
+  --text-subtitle--line-height: 1;
+}

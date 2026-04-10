@@ -15,7 +15,7 @@ defineOptions({ name: 'NotFoundPage' })
       <section class="flex min-h-dvh flex-col items-center justify-center px-5 text-center">
         <h1 class="text-heading-2 font-medium text-primary">404</h1>
         <p class="mt-3 text-body text-secondary">
-          Что-то пошло не так, перезагрузите страницу
+          Что-то пошло не так, страница не найдена. Вернитесь назад.
         </p>
       </section>
     </main>

@@ -61,7 +61,13 @@ function onSubmit() {
         {{ generalError }}
       </p>
 
-      <Button class="mt-6 w-full" type="submit" variant="secondary" :loading="isSubmitting">
+      <Button
+        class="mt-6 w-full"
+        type="submit"
+        variant="secondary"
+        :disabled="isSubmitting"
+        :loading="isSubmitting"
+      >
         Восстановить пароль
       </Button>
     </Form>

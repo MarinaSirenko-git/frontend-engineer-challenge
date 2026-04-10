@@ -6,7 +6,7 @@ declare module 'vue-router' {
     requiresAuth?: boolean
     /** Только для гостя: /sign-in, /sign-up, /forgot-password — при сессии редирект на dashboard */
     guestOnly?: boolean
-    /** Публичный маршрут: /reset-password, 404 — доступен с сессией и без */
+    /** Публичный маршрут: /reset-password (и alias), 404 — доступен с сессией и без */
     public?: boolean
   }
 }

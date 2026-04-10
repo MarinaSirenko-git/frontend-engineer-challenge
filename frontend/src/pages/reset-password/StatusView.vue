@@ -44,7 +44,7 @@ function handlePrimaryAction() {
         <Button v-if="hasPrimaryAction" class="w-full" variant="secondary" @click="handlePrimaryAction">
           {{ props.primaryLabel }}
         </Button>
-        <Link v-if="hasSecondaryAction" :to="props.secondaryTo!" variant="default">
+        <Link v-if="hasSecondaryAction" :to="props.secondaryTo!" variant="accent">
           {{ props.secondaryLabel }}
         </Link>
       </div>

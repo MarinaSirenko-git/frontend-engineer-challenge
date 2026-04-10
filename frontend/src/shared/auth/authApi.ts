@@ -44,9 +44,11 @@ export function requestPasswordReset(
   )
 }
 
-export function resetPassword(payload: ResetPasswordRequest): Promise<ResetPasswordHttpResponse> {
-  return postAuth<ResetPasswordHttpResponse, ResetPasswordRequest>(
-    AUTH_PATHS.resetPassword,
-    payload,
-  )
+export async function resetPassword(
+  payload: ResetPasswordRequest,
+): Promise<ResetPasswordHttpResponse> {
+  // TODO: убрать исключение, когда бекенд примет то же имя поля, что и остальные эндпоинты
+  // после `toServer` (например `new_password`), и снова можно будет вызывать `postAuth`.
+  const raw = await request<unknown>(AUTH_PATHS.resetPassword, { method: 'POST', body: payload })
+  return convertFieldName(raw, 'fromServer') as ResetPasswordHttpResponse
 }

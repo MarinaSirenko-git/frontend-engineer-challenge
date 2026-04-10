@@ -15,7 +15,7 @@ const NotFoundPage = () => import('../../pages/NotFoundPage.vue')
  * Мета по плану:
  * - requiresAuth: Dashboard
  * - guestOnly: /sign-in, /sign-up, /forgot-password
- * - public: /reset-password, 404 (без редиректов по сессии)
+ * - public: /reset-password (alias /auth/recovery/new-password), 404 (без редиректов по сессии)
  * - `/`: redirect в зависимости от сессии (см. ниже)
  */
 
@@ -48,6 +48,7 @@ export const router = createRouter({
     },
     {
       path: '/reset-password',
+      alias: '/auth/recovery/new-password',
       name: 'reset-password',
       component: ResetPasswordPage,
       meta: { public: true },

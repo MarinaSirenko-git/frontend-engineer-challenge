@@ -24,8 +24,8 @@ function handlePrimaryAction() {
 <template>
   <section class="w-full max-w-[480px]">
     <AuthStatus class="text-center">
-      <h1 class="text-heading font-medium text-primary">{{ props.title }}</h1>
-      <p class="mt-3 text-body text-secondary">{{ props.description }}</p>
+      <h1 class="text-heading font-medium text-primary text-left">{{ props.title }}</h1>
+      <p class="mt-5 text-body text-secondary text-left">{{ props.description }}</p>
       <Button class="mt-8 w-full" variant="secondary" @click="handlePrimaryAction">
         {{ props.primaryLabel }}
       </Button>

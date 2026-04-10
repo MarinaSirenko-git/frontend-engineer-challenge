@@ -1,5 +1,101 @@
-# Vue 3 + TypeScript + Vite
+# Orbitto — frontend
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Клиент для входа, регистрации и восстановления пароля
 
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+## Как запустить
+
+### 1. Backend
+
+Склонируйте и поднимите сервер из форка [SilverHof/engineer-challenge](https://github.com/SilverHof/engineer-challenge) по инстукции README
+
+В корне проекта backend создайте файл `.env`. 
+Ниже — необходимый набор переменных;
+
+```env
+
+DATABASE_URL=postgresql://USER@localhost:5432/DBNAME
+MAX_CONNECTIONS=10
+MIN_CONNECTIONS=2
+CONNECT_TIMEOUT_SECONDS=30
+IDLE_TIMEOUT_SECONDS=600
+MAX_LIFETIME_SECONDS=1800
+
+ENV=development
+SERVER_HOST=127.0.0.1
+SERVER_PORT=8080
+HOST=0.0.0.0
+PORT=8080
+JWT_SECRET=ваш-супер-секретный-ключ-минимум-32-символа-very-secret-key-123
+RATE_LIMITING_REQUESTS=10
+RATE_LIMITING_BURST_SIZE=20
+
+MAILER_HOST=smtp.gmail.com
+MAILER_PORT=465
+MAILER_USERNAME=user@gmail.com
+MAILER_PASSWORD=password
+MAILER_FROM=user@gmail.com
+MAILER_PASSWORD_RESET_BASE_URL=http://localhost:5173
+RATE_LIMIT_REQUESTS_PER_SECOND=10
+RATE_LIMIT_BURST_SIZE=20
+RUST_LOG=info
+
+```
+
+Я выбрала этот backend, потому что он хорошо задокументирован и предсказуем: по REST я работаю увереннее — такие API уже писала, и при необходимости разобраться с багом или несовпадением контракта мне было бы проще, чем, например, с gRPC.
+
+### 2. Frontend
+
+1. Установите зависимости и запустите dev-сервер:
+
+   ```bash
+
+   cd frontend
+   npm install
+   npm run dev
+
+   ```
+
+- **адрес:** `http://localhost:5173`
+- **сборка:** `npm run build`
+- **локальный просмотр билда:** `npm run preview`
+
+
+## Как устроен проект
+
+Глобальную задачу разбила на **сущности** с разной ответственностью — так проще улучшать и поддерживать код.
+
+- **Интеграция с API** (`shared/api/`, `shared/auth/`) | HTTP-клиент, пути, маппинг `snake_case` ↔ `camelCase`, разбор ошибок. Контракт с backend собран в одном месте.
+- **Приложение** (`app/`) | Точка входа, Pinia, роуты и guards: правила навигации не размазаны по страницам.
+- **Страницы** (`pages/`) | Только разметка и связка с composable: что показать и какие события пробросить. Без деталей HTTP и без лишней работы с глобальным стором в шаблоне.
+- **UI** (`shared/ui/`) | Кнопки, поля, лейауты — переиспользование и единый вид без бизнес-логики.
+- **Сценарии** (`composables/`) | Один экран — один сценарий: состояние формы, валидация, вызов API, ошибки. Удобно править поведение экрана, не трогая транспорт и типы API.
+- **Валидация** (`shared/validation/`) | Чистые функции над значениями полей; одни правила для разных экранов.
+- **Сессия** (`stores/`) | Токены и факт входа — общее для роутера и экранов; не дублируется в каждом composable.
+- **Наблюдаемость** (`shared/observability/`) | Логи по API отдельно от компонентов.
+
+## Почему такой стек
+
+- **Vue 3** — рассматривала и React, но больше коммерческого опыта с Vue; в нём увереннее и быстрее выхожу на результат.
+- **TypeScript** — для контракта с API и моделей состояния типы почти обязательны; плюс автодополнение и ранние ошибки в IDE.
+- **Pinia** — для челленджа можно было обойтись пропс-дриллингом, но при росте приложения стор для сессии всё равно понадобился бы; проще заложить его сразу, чем переделывать. Из альтернатив Vuex для новых проектов уже не выбираю.
+- **Tailwind** — быстрая вёрстка без тяжёлого UI-kit; типографику и палитру вынесла в `@theme`, чтобы не гадать по классам, что считать primary/secondary.
+- **Vue Router** — стандарт для SPA на Vue.
+
+## Trade-offs (чем пожертвовала и зачем)
+
+- **Имена полей:** ответы backend в `snake_case`, в коде удобнее `camelCase`. Для этого есть общая функция переименования. У **сброса пароля** на сервер уходит исключение: поле пароля должно называться `newPassword`, иначе backend не принимает тело — это временный костыль с комментарием в коде, пока API не выровняют.
+- **Токены в `localStorage`:** уместны для челленджа, текущий API отдаёт токены только в JSON, нужно доработать бекенд и тогда вместо localStorage — httpOnly-cookie + refresh, access в памяти или полностью cookie-сессия на том же origin
+- **Тесты:** проект хорошо структурирован, можно было бы добавить тесты используя генерацию кода, но у меня нет опыта работы с тестами. И здесь главное правило сначала разобраться как это работает, а потом использовать генерацию или ручное написание. Но погружение в контекст тестирования требует времени, пришлось пожертвовать.
+- **Pixel perfect:** к макету результат не подгоняла; основные отступы и типографика на месте, расхождения в деталях возможны.
+- **Мобильные устройства:** проверяла в основном в DevTools и на десктопе; на физическом телефоне не тестировала — возможны сюрпризы по тачу и safe-area.
+
+## Что бы сделала дальше для production
+
+- Покрыть тестами критичное: запросы к API, валидацию, хотя бы happy path по сценариям.
+- Явный **выход из аккаунта** и предсказуемое обновление токена.
+- Доработки backend под безопасную сессию (cookie/BFF), если остаёмся на этом API.
+- Наблюдаемость: Sentry, New Relic или аналог для ошибок и метрик.
+
+## Демо / скринкаст
+
+**Скринкаст:** https://www.loom.com/share/0617f02debc74b92bb5d430805e1b50c

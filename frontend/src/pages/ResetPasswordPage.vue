@@ -75,7 +75,7 @@ watch(
 
       <div class="flex min-h-dvh items-center justify-center px-5 py-8">
         <FormView
-          v-if="resetPassword.status.value === 'form'"
+          v-if="resetPassword.status.value === 'form' || resetPassword.status.value === 'validationError'"
           :model="{
             password: resetPassword.password.value,
             confirmPassword: resetPassword.confirmPassword.value,

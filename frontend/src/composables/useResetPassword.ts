@@ -8,7 +8,12 @@ import type { ResetPasswordHttpResponse } from '../shared/api/types'
 import { validateConfirmPassword } from '../shared/validation/confirmPassword'
 import { validatePassword } from '../shared/validation/password'
 
-export type ResetPasswordStatus = 'invalid-link' | 'form' | 'success' | 'fail'
+export type ResetPasswordStatus =
+  | 'invalid-link'
+  | 'form'
+  | 'validationError'
+  | 'success'
+  | 'fail'
 
 export interface ResetPasswordFieldErrors {
   password?: string
@@ -63,7 +68,9 @@ export function useResetPassword(): UseResetPasswordResult {
     if (confirmPasswordError) nextErrors.confirmPassword = confirmPasswordError
 
     fieldErrors.value = nextErrors
-    return Object.keys(nextErrors).length === 0
+    const isValid = Object.keys(nextErrors).length === 0
+    status.value = isValid ? 'form' : 'validationError'
+    return isValid
   }
 
   async function submit(): Promise<ResetPasswordHttpResponse | null> {
@@ -106,26 +113,26 @@ export function useResetPassword(): UseResetPasswordResult {
     }
   }
 
-  watch(password, () => {
-    if (fieldErrors.value.password || fieldErrors.value.confirmPassword) {
+  function onResetPasswordFieldChange(field: 'password' | 'confirmPassword') {
+    if (field === 'password' && (fieldErrors.value.password || fieldErrors.value.confirmPassword)) {
       const { password: _passwordError, confirmPassword: _confirmPasswordError, ...rest } =
         fieldErrors.value
       fieldErrors.value = rest
     }
-    if (generalError.value) {
-      generalError.value = ''
-    }
-  })
-
-  watch(confirmPassword, () => {
-    if (fieldErrors.value.confirmPassword) {
+    if (field === 'confirmPassword' && fieldErrors.value.confirmPassword) {
       const { confirmPassword: _confirmPasswordError, ...rest } = fieldErrors.value
       fieldErrors.value = rest
     }
+    if (status.value === 'validationError') {
+      status.value = 'form'
+    }
     if (generalError.value) {
       generalError.value = ''
     }
-  })
+  }
+
+  watch(password, () => onResetPasswordFieldChange('password'))
+  watch(confirmPassword, () => onResetPasswordFieldChange('confirmPassword'))
 
   return {
     token,

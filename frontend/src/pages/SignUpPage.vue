@@ -19,7 +19,7 @@ const signUp = useSignUp()
 async function handleSubmit() {
   const result = await signUp.submit()
   if (result) {
-    await router.push('/dashboard')
+    await router.push('/sign-in')
   }
 }
 </script>

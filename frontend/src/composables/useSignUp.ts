@@ -3,12 +3,24 @@ import type { Ref } from 'vue'
 import { register } from '../shared/auth/authApi'
 import { isApiHttpError } from '../shared/api/httpClient'
 import { normalizeAuthError } from '../shared/auth/normalizeAuthError'
-import type { RegisterUserHttpResponse } from '../shared/api/types'
+import type { RegisterUserData, RegisterUserHttpResponse } from '../shared/api/types'
 import { validateConfirmPassword } from '../shared/validation/confirmPassword'
 import { validateEmail } from '../shared/validation/email'
 import { validatePassword } from '../shared/validation/password'
+import { useSessionStore } from '../stores/sessionStore'
 
 const EMAIL_ALREADY_EXISTS_MESSAGE = 'Данный адрес уже занят'
+
+function isRegisterUserData(value: unknown): value is RegisterUserData {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+  const c = value as Partial<RegisterUserData>
+  return (
+    typeof c.id === 'string' &&
+    typeof c.email === 'string' &&
+    typeof c.createdAt === 'string' &&
+    typeof c.updatedAt === 'string'
+  )
+}
 
 export type SignUpStatus = 'idle' | 'validationError' | 'submitting' | 'serverError' | 'success'
 
@@ -32,6 +44,7 @@ interface UseSignUpResult {
 }
 
 export function useSignUp(): UseSignUpResult {
+  const sessionStore = useSessionStore()
   const email = ref('')
   const password = ref('')
   const confirmPassword = ref('')
@@ -81,6 +94,9 @@ export function useSignUp(): UseSignUpResult {
         email: email.value.trim(),
         password: password.value,
       })
+      if (isRegisterUserData(response.data)) {
+        sessionStore.setUserFromRegister(response.data)
+      }
       status.value = 'success'
       return response
     } catch (error: unknown) {

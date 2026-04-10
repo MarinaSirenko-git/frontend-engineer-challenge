@@ -3,9 +3,10 @@ import type { Ref } from 'vue'
 import { login } from '../shared/auth/authApi'
 import { isApiHttpError } from '../shared/api/httpClient'
 import { normalizeAuthError } from '../shared/auth/normalizeAuthError'
-import type { LoginHttpResponse } from '../shared/api/types'
+import type { LoginHttpResponse, TokenPair } from '../shared/api/types'
 import { validateEmail } from '../shared/validation/email'
 import { validatePassword } from '../shared/validation/password'
+import { useSessionStore } from '../stores/sessionStore'
 
 const INVALID_CREDENTIALS_MESSAGE = 'Введены неверные данные'
 
@@ -32,7 +33,19 @@ function isInvalidCredentialsStatus(statusCode?: number): boolean {
   return statusCode === 401 || statusCode === 404
 }
 
+function isTokenPair(value: unknown): value is TokenPair {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+  const candidate = value as Partial<TokenPair>
+  return (
+    typeof candidate.accessToken === 'string' &&
+    typeof candidate.refreshToken === 'string' &&
+    typeof candidate.tokenType === 'string' &&
+    typeof candidate.expiresIn === 'number'
+  )
+}
+
 export function useSignIn(): UseSignInResult {
+  const sessionStore = useSessionStore()
   const email = ref('')
   const password = ref('')
   const fieldErrors = ref<SignInFieldErrors>({})
@@ -78,6 +91,9 @@ export function useSignIn(): UseSignInResult {
         email: email.value.trim(),
         password: password.value,
       })
+      if (isTokenPair(response.data)) {
+        sessionStore.setTokenPair(response.data, { email: email.value.trim() })
+      }
       status.value = 'success'
       return response
     } catch (error: unknown) {

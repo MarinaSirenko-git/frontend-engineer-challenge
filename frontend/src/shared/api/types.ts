@@ -55,6 +55,20 @@ export interface TokenPair {
   expiresIn: number
 }
 
+export interface SessionUser {
+  id?: string
+  email?: string
+  [key: string]: unknown
+}
+
+export interface SessionSnapshot {
+  accessToken: string | null
+  refreshToken: string | null
+  tokenType: string | null
+  expiresAt: number | null
+  user: SessionUser | null
+}
+
 // Успешные ответы целиком (после нормализации)
 
 export type RegisterUserResponse = ApiSuccess<RegisterUserData>

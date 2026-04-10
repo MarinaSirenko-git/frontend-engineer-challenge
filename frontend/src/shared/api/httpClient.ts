@@ -1,3 +1,9 @@
+import {
+  logApiMalformedResponse,
+  logApiServerError,
+  logApiTransportError,
+  logRateLimited,
+} from '../observability/clientLog'
 import type { ApiErrorBody } from './types'
 
 const ACCEPT_JSON = 'application/json'
@@ -15,6 +21,18 @@ function resolveUrl(path: string): string {
   if (/^https?:\/\//i.test(path)) return path
   const base = apiBaseUrl()
   return `${base}${path.startsWith('/') ? path : `/${path}`}`
+}
+
+/** Relative path for logs only (no origin / secrets). */
+function logPathFromRequestPath(path: string): string {
+  if (/^https?:\/\//i.test(path)) {
+    try {
+      return new URL(path).pathname || '/'
+    } catch {
+      return '[invalid-url]'
+    }
+  }
+  return path.startsWith('/') ? path : `/${path}`
 }
 
 function isApiErrorBody(value: unknown): value is ApiErrorBody {
@@ -46,6 +64,7 @@ export type ApiRequestInit = Omit<RequestInit, 'body'> & {
 export async function request<T>(path: string, init: ApiRequestInit = {}): Promise<T> {
   const { body, headers: initHeaders, ...rest } = init
   const methodUpper = (init.method ?? 'GET').toString().toUpperCase()
+  const pathForLog = logPathFromRequestPath(path)
   const url = resolveUrl(path)
 
   const headers = new Headers(initHeaders)
@@ -56,11 +75,17 @@ export async function request<T>(path: string, init: ApiRequestInit = {}): Promi
     headers.set('Accept', ACCEPT_JSON)
   }
 
-  const response = await fetch(url, {
-    ...rest,
-    headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  })
+  let response: Response
+  try {
+    response = await fetch(url, {
+      ...rest,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    })
+  } catch (error: unknown) {
+    logApiTransportError(methodUpper, pathForLog, error)
+    throw error
+  }
 
   const raw = await response.text()
   let payload: unknown = undefined
@@ -68,6 +93,7 @@ export async function request<T>(path: string, init: ApiRequestInit = {}): Promi
     try {
       payload = JSON.parse(raw) as unknown
     } catch {
+      logApiMalformedResponse(methodUpper, pathForLog, 'json_parse', response.status)
       throw new ApiHttpError(
         response.statusText || 'Invalid response',
         response.status,
@@ -78,6 +104,11 @@ export async function request<T>(path: string, init: ApiRequestInit = {}): Promi
   if (!response.ok) {
     const bodyParsed = isApiErrorBody(payload) ? payload : undefined
     const message = bodyParsed?.message ?? response.statusText ?? 'Request failed'
+    if (response.status >= 500) {
+      logApiServerError(methodUpper, pathForLog, response.status, message)
+    } else if (response.status === 429) {
+      logRateLimited(methodUpper, pathForLog)
+    }
     throw new ApiHttpError(message, response.status, bodyParsed)
   }
 
@@ -86,6 +117,7 @@ export async function request<T>(path: string, init: ApiRequestInit = {}): Promi
     (response.status === 204 || methodUpper === 'HEAD')
 
   if (payload === undefined && !emptySuccessAllowed) {
+    logApiMalformedResponse(methodUpper, pathForLog, 'empty_body', response.status)
     throw new ApiHttpError('Empty response body', response.status)
   }
 

@@ -2,6 +2,7 @@ import { ref, watch } from 'vue'
 import type { Ref } from 'vue'
 import { resetPassword } from '../shared/auth/authApi'
 import { isApiHttpError } from '../shared/api/httpClient'
+import { logPasswordResetTokenRejected } from '../shared/observability/clientLog'
 import { normalizeAuthError } from '../shared/auth/normalizeAuthError'
 import type { ResetPasswordHttpResponse } from '../shared/api/types'
 import { validateConfirmPassword } from '../shared/validation/confirmPassword'
@@ -89,6 +90,10 @@ export function useResetPassword(): UseResetPasswordResult {
       const statusCode = isApiHttpError(error) ? error.status : undefined
 
       if (statusCode === 400) {
+        logPasswordResetTokenRejected({
+          reason: 'http_400',
+          tokenLength: token.value.length,
+        })
         status.value = 'fail'
       } else {
         status.value = 'form'

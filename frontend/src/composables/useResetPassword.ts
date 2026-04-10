@@ -12,6 +12,7 @@ export type ResetPasswordStatus =
   | 'invalid-link'
   | 'form'
   | 'validationError'
+  | 'submitting'
   | 'success'
   | 'fail'
 
@@ -84,6 +85,7 @@ export function useResetPassword(): UseResetPasswordResult {
       return null
     }
 
+    status.value = 'submitting'
     isSubmitting.value = true
 
     try {

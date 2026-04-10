@@ -17,12 +17,16 @@ const props = defineProps<{
 
 const router = useRouter()
 
+function hasVisibleLabel(label: string | undefined): boolean {
+  return typeof label === 'string' && label.trim().length > 0
+}
+
 const hasPrimaryAction = computed(
-  () => Boolean(props.primaryLabel) && Boolean(props.primaryTo),
+  () => hasVisibleLabel(props.primaryLabel) && Boolean(props.primaryTo),
 )
 
 const hasSecondaryAction = computed(
-  () => Boolean(props.secondaryLabel) && Boolean(props.secondaryTo),
+  () => hasVisibleLabel(props.secondaryLabel) && Boolean(props.secondaryTo),
 )
 
 function handlePrimaryAction() {

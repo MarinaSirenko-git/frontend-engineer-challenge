@@ -44,6 +44,8 @@ function isTokenPair(value: unknown): value is TokenPair {
   )
 }
 
+type CredentialField = 'email' | 'password'
+
 export function useSignIn(): UseSignInResult {
   const sessionStore = useSessionStore()
   const email = ref('')
@@ -116,31 +118,25 @@ export function useSignIn(): UseSignInResult {
     }
   }
 
-  watch(email, () => {
-    if (fieldErrors.value.email) {
+  function onCredentialFieldChange(field: CredentialField) {
+    if (field === 'email' && fieldErrors.value.email) {
       const { email: _emailError, ...rest } = fieldErrors.value
       fieldErrors.value = rest
     }
-    if (status.value === 'validationError') {
-      status.value = 'idle'
-    }
-    if (generalError.value) {
-      generalError.value = ''
-    }
-  })
-
-  watch(password, () => {
-    if (fieldErrors.value.password) {
+    if (field === 'password' && fieldErrors.value.password) {
       const { password: _passwordError, ...rest } = fieldErrors.value
       fieldErrors.value = rest
     }
-    if (status.value === 'validationError') {
+    if (status.value === 'validationError' || status.value === 'serverError') {
       status.value = 'idle'
     }
     if (generalError.value) {
       generalError.value = ''
     }
-  })
+  }
+
+  watch(email, () => onCredentialFieldChange('email'))
+  watch(password, () => onCredentialFieldChange('password'))
 
   return {
     email,

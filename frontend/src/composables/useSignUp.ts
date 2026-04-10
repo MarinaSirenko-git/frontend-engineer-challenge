@@ -43,6 +43,8 @@ interface UseSignUpResult {
   resetErrors: () => void
 }
 
+type SignUpField = 'email' | 'password' | 'confirmPassword'
+
 export function useSignUp(): UseSignUpResult {
   const sessionStore = useSessionStore()
   const email = ref('')
@@ -115,45 +117,31 @@ export function useSignUp(): UseSignUpResult {
     }
   }
 
-  watch(email, () => {
-    if (fieldErrors.value.email) {
+  function onSignUpFieldChange(field: SignUpField) {
+    if (field === 'email' && fieldErrors.value.email) {
       const { email: _emailError, ...rest } = fieldErrors.value
       fieldErrors.value = rest
     }
-    if (status.value === 'validationError') {
-      status.value = 'idle'
-    }
-    if (generalError.value) {
-      generalError.value = ''
-    }
-  })
-
-  watch(password, () => {
-    if (fieldErrors.value.password || fieldErrors.value.confirmPassword) {
+    if (field === 'password' && (fieldErrors.value.password || fieldErrors.value.confirmPassword)) {
       const { password: _passwordError, confirmPassword: _confirmPasswordError, ...rest } =
         fieldErrors.value
       fieldErrors.value = rest
     }
-    if (status.value === 'validationError') {
-      status.value = 'idle'
-    }
-    if (generalError.value) {
-      generalError.value = ''
-    }
-  })
-
-  watch(confirmPassword, () => {
-    if (fieldErrors.value.confirmPassword) {
+    if (field === 'confirmPassword' && fieldErrors.value.confirmPassword) {
       const { confirmPassword: _confirmPasswordError, ...rest } = fieldErrors.value
       fieldErrors.value = rest
     }
-    if (status.value === 'validationError') {
+    if (status.value === 'validationError' || status.value === 'serverError') {
       status.value = 'idle'
     }
     if (generalError.value) {
       generalError.value = ''
     }
-  })
+  }
+
+  watch(email, () => onSignUpFieldChange('email'))
+  watch(password, () => onSignUpFieldChange('password'))
+  watch(confirmPassword, () => onSignUpFieldChange('confirmPassword'))
 
   return {
     email,
